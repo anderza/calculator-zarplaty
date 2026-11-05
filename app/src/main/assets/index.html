@@ -67,6 +67,14 @@ td.dbl{white-space:nowrap;font-family:var(--mono)}
 
 [hidden]{display:none!important}
 .wrap>*{min-width:0}
+.titlebar{display:flex;align-items:center;gap:12px}
+.info{flex:none;width:34px;height:34px;border-radius:50%;border:2px solid var(--accent);background:var(--accent-soft);color:var(--accent);font:700 16px/1 var(--body);cursor:pointer;display:grid;place-items:center;padding:0}
+.info[aria-expanded="true"]{background:var(--accent);color:var(--surface)}
+.infopanel{margin-top:14px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 18px;max-width:70ch}
+.infohead{display:flex;justify-content:space-between;align-items:center}
+.infopanel h3{font-size:14px;margin:14px 0 4px;color:var(--accent)}
+.infopanel ul{margin:0;padding-left:18px;display:grid;gap:4px;color:var(--ink)}
+.m p{display:none}
 .tabs{display:flex;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:4px;width:fit-content;max-width:100%}
 .tab{font:inherit;font-weight:600;border:0;background:transparent;color:var(--muted);padding:8px 16px;border-radius:7px;cursor:pointer}
 .tab[aria-selected="true"]{background:var(--accent-soft);color:var(--accent)}
@@ -97,6 +105,13 @@ td.dbl{white-space:nowrap;font-family:var(--mono)}
 .sw{display:inline-block;width:12px;height:12px;border-radius:3px;background:var(--accent-soft);border:1px solid var(--line);vertical-align:-2px;margin-right:4px}
 .tt td.c.sick input{background:var(--b);color:var(--surface);border-color:var(--b);font-weight:600}
 .sk{display:inline-block;background:var(--b);color:var(--surface);border-radius:3px;padding:0 4px;font-family:var(--mono);font-size:12px}
+.msum{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line)}
+.seg{display:flex;gap:4px;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:3px}
+.seg button{font:inherit;font-weight:600;border:0;background:transparent;color:var(--muted);padding:6px 12px;border-radius:6px;cursor:pointer}
+.seg button[aria-checked="true"]{background:var(--surface);color:var(--accent);box-shadow:0 0 0 1px var(--line)}
+.msf{padding:6px 12px;min-width:220px}
+.msf input{font-size:18px}
+.msum .note{margin:0}
 .btn.warn{border-color:var(--accent);background:var(--accent);color:var(--surface)}
 </style>
 
@@ -104,8 +119,29 @@ td.dbl{white-space:nowrap;font-family:var(--mono)}
 <body>
 <div class="wrap">
   <header>
-    <h1>Оплата бригады по часам</h1>
-    <p class="lead">Меняйте сумму за день, норму часов и часы каждого работника. Расчёт идёт сразу двумя способами. Кто отработал меньше нормы, подсвечен. Столбец «За 8 ч» показывает, сколько человек получил бы за полный день. Кнопка «×2» удваивает заработанное работником за день по обоим вариантам. На вкладке «Табель на месяц» часы ставятся по дням календаря и пересчитываются в зарплату за месяц.</p>
+    <div class="titlebar"><h1>Оплата бригады по часам</h1><button class="info" id="infoBtn" type="button" aria-label="Справка" aria-expanded="false">И</button></div>
+    <div class="infopanel" id="infoPanel" hidden>
+      <div class="infohead"><h2>Справка</h2><button class="x" id="infoClose" type="button" aria-label="Закрыть">×</button></div>
+      <h3>Вкладка «День»</h3>
+      <ul>
+        <li>Меняйте сумму за день, норму часов и часы каждого работника. Расчёт идёт сразу двумя способами.</li>
+        <li>Кто отработал меньше нормы, подсвечен.</li>
+        <li>Столбец «За 8 ч» показывает, сколько человек получил бы за полный день.</li>
+        <li>Кнопка «×2» удваивает заработанное работником за день по обоим вариантам.</li>
+        <li><b>Вариант А:</b> сумма за день целиком делится на все отработанные часы. <b>Вариант Б:</b> фиксированная ставка = сумма / (люди × норма), недоработанное остаётся.</li>
+      </ul>
+      <h3>Вкладка «Табель на месяц»</h3>
+      <ul>
+        <li><i class="sw"></i>Выходные по умолчанию суббота и воскресенье. Нажмите на число в шапке, чтобы сделать день рабочим или выходным.</li>
+        <li>В клетках часы, их можно менять, в том числе в выходные.</li>
+        <li><b class="sk">Б</b> в клетке означает больничный: день не оплачивается и не входит в расчёт.</li>
+        <li><b>От суммы за день:</b> вариант Б платит каждый час по ставке сумма за день / (люди × норма), вариант А каждый день делит сумму за день между вышедшими по часам.</li>
+        <li><b>Сумма за месяц:</b> вариант Б платит по ставке сумма за месяц / (люди × рабочие дни × норма), вариант А делит всю сумму за месяц пропорционально часам в табеле.</li>
+        <li>Удаление работника: нажмите × два раза.</li>
+      </ul>
+      <h3>Хранение</h3>
+      <ul><li>Суммы показаны с копейками. Всё сохраняется на этом устройстве, табель отдельно для каждого месяца.</li></ul>
+    </div>
   </header>
   <nav class="tabs" role="tablist" aria-label="Режим"><button class="tab" id="tabDay" role="tab" type="button" aria-selected="true">День</button><button class="tab" id="tabMonth" role="tab" type="button" aria-selected="false">Табель на месяц</button></nav>
 
@@ -150,7 +186,6 @@ td.dbl{white-space:nowrap;font-family:var(--mono)}
       <dl><dt>Выплачено</dt><dd id="paidB"></dd><dt>Остаток</dt><dd id="leftB"></dd></dl>
     </article>
   </section>
-  <p class="note">Суммы показаны с копейками. Изменения сохраняются в этом браузере.</p>
   </div>
 
   <div id="viewMonth" hidden>
@@ -168,26 +203,32 @@ td.dbl{white-space:nowrap;font-family:var(--mono)}
         <button class="btn ghost" id="tReset" type="button">Сбросить месяц</button>
       </div>
     </div>
+    <div class="msum">
+      <div class="seg" role="radiogroup" aria-label="От чего считать зарплату за месяц">
+        <button type="button" role="radio" id="srcDay" aria-checked="true">От суммы за день</button>
+        <button type="button" role="radio" id="srcMonth" aria-checked="false">Сумма за месяц</button>
+      </div>
+      <div class="field msf" id="mSumBox" hidden><label for="mSum">Сумма за месяц на бригаду, ₽</label><input id="mSum" type="number" min="0" step="any" inputmode="decimal"></div>
+      <span class="note" id="mSrcNote"></span>
+    </div>
     <div class="tbl"><table class="tt" id="tt"></table></div>
-    <div class="legend"><span><i class="sw"></i>выходной (по умолчанию суббота и воскресенье)</span><span>Нажмите на число в шапке, чтобы сделать день рабочим или выходным.</span><span>В клетках часы, их можно менять, в том числе в выходные.</span><span><b class="sk">Б</b> в клетке означает больничный: этот день не оплачивается и не входит в расчёт.</span></div>
   </section>
   <section class="methods">
     <article class="m b">
       <span class="tag">ВАРИАНТ Б · МЕСЯЦ</span>
       <h2>Фиксированная ставка за час</h2>
-      <p>Каждый час оплачивается по ставке: сумма за день / (люди × норма).</p>
+      <p id="mTxtB"></p>
       <div class="rate" id="mRateB"></div>
-      <dl><dt>Часов за месяц</dt><dd id="mHours"></dd><dt>Рабочих дней в календаре</dt><dd id="mDays"></dd><dt>Фонд за месяц (дни × сумма)</dt><dd id="mFund"></dd><dt>Выплачено</dt><dd id="mPaidB"></dd></dl>
+      <dl><dt>Часов за месяц</dt><dd id="mHours"></dd><dt>Рабочих дней в календаре</dt><dd id="mDays"></dd><dt id="mFundL"></dt><dd id="mFund"></dd><dt>Выплачено</dt><dd id="mPaidB"></dd></dl>
     </article>
     <article class="m a">
       <span class="tag">ВАРИАНТ А · МЕСЯЦ</span>
-      <h2>Дневная сумма делится по часам</h2>
-      <p>Каждый день, когда кто-то вышел, сумма за день целиком делится между вышедшими по их часам.</p>
+      <h2 id="mHdrA"></h2>
+      <p id="mTxtA"></p>
       <div class="rate" id="mDaysWorked"></div>
       <dl><dt>Выплачено</dt><dd id="mPaidA"></dd></dl>
     </article>
   </section>
-  <p class="note">Ставка берётся из полей «Сумма за день» и «Норма часов» вверху. Табель хранится отдельно для каждого месяца в этом браузере.</p>
   </div>
 </div>
 
@@ -283,15 +324,18 @@ function renderT(){
 }
 function calcT(){
   const n=dim(),sum=num(st.sum),norm=num(st.norm),ppl=tb.workers.length;
-  const rB=ppl*norm>0?sum/(ppl*norm):0;
+  const m=mon(),byMonth=m.src==="month",M=num(m.sum);
   const per=tb.workers.map(()=>({h:0,n:0,a:0,s:0}));let S=0;let workDays=0,daysWorked=0;
   for(let d=1;d<=n;d++){
     if(!isOff(d))workDays++;
     const hs=tb.workers.map(w=>hv(w.id,d)),tot=hs.reduce((x,y)=>x+y,0);
     if(tot>0)daysWorked++;
-    hs.forEach((x,i)=>{if(isSick(tb.workers[i].id,d)){per[i].s++;S++}per[i].h+=x;if(x>0)per[i].n++;if(tot>0)per[i].a+=x/tot*sum});
+    hs.forEach((x,i)=>{if(isSick(tb.workers[i].id,d)){per[i].s++;S++}per[i].h+=x;if(x>0)per[i].n++;if(tot>0&&!byMonth)per[i].a+=x/tot*sum});
     const c=document.querySelector(`[data-dt="${d}"]`);if(c)c.textContent=tot?tot.toLocaleString("ru-RU"):"";
   }
+  const Htot=per.reduce((x,p)=>x+p.h,0);
+  const rB=byMonth?(ppl*workDays*norm>0?M/(ppl*workDays*norm):0):(ppl*norm>0?sum/(ppl*norm):0);
+  if(byMonth)per.forEach(p=>p.a=Htot>0?p.h/Htot*M:0);
   let H=0,A=0,B=0;
   [...$("tt").tBodies[0].rows].forEach((tr,i)=>{const p=per[i],b=p.h*rB;H+=p.h;A+=p.a;B+=b;
     tr.querySelector('[data-k="h"]').textContent=p.h.toLocaleString("ru-RU");
@@ -301,8 +345,15 @@ function calcT(){
     tr.querySelector('[data-k="a"]').textContent=fmt(p.a)});
   $("ftH").textContent=H.toLocaleString("ru-RU");$("ftS").textContent=S||"";$("ftA").textContent=fmt(A);$("ftB").textContent=fmt(B);
   $("mRateB").textContent=fmt(rB)+" ₽/ч";$("mHours").textContent=H.toLocaleString("ru-RU");
-  $("mDays").textContent=workDays;$("mFund").textContent=fmt(workDays*sum)+" ₽";$("mPaidB").textContent=fmt(B)+" ₽";
-  $("mDaysWorked").textContent=daysWorked+" дн. с выходами";$("mPaidA").textContent=fmt(A)+" ₽";
+  $("mDays").textContent=workDays;$("mFund").textContent=fmt(byMonth?M:workDays*sum)+" ₽";
+  $("mFundL").textContent=byMonth?"Сумма за месяц":"Фонд за месяц (дни × сумма за день)";
+  $("mTxtB").textContent=byMonth?"Ставка = сумма за месяц / (люди × рабочие дни × норма). Каждый час оплачивается по ней, недоработка и больничные не оплачиваются.":"Каждый час оплачивается по ставке: сумма за день / (люди × норма).";
+  $("mHdrA").textContent=byMonth?"Сумма за месяц делится по часам":"Дневная сумма делится по часам";
+  $("mTxtA").textContent=byMonth?"Вся сумма за месяц делится между работниками пропорционально часам в табеле.":"Каждый день, когда кто-то вышел, сумма за день целиком делится между вышедшими по их часам.";
+  $("srcDay").setAttribute("aria-checked",!byMonth);$("srcMonth").setAttribute("aria-checked",byMonth);$("mSumBox").hidden=!byMonth;
+  if(document.activeElement!==$("mSum"))$("mSum").value=m.sum??"";
+  $("mSrcNote").textContent=byMonth?"Сумма своя для каждого месяца.":"Считается как "+workDays+" раб. дн. × "+fmt(sum)+" ₽ = "+fmt(workDays*sum)+" ₽.";$("mPaidB").textContent=fmt(B)+" ₽";
+  $("mDaysWorked").textContent=byMonth?fmt(Htot>0?M/Htot:0)+" ₽/ч":daysWorked+" дн. с выходами";$("mPaidA").textContent=fmt(A)+" ₽";
 }
 $("tt").addEventListener("input",e=>{const el=e.target;if(!el.dataset.d)return;if(SICK.test(el.value))el.value="Б";el.parentNode.classList.toggle("sick",el.value==="Б");const m=mon();(m.cells[el.dataset.id]||(m.cells[el.dataset.id]={}))[el.dataset.d]=el.value;saveT();calcT()});
 let delArm=null;
@@ -321,6 +372,10 @@ let resetArm=false;
 $("tReset").onclick=()=>{const b=$("tReset");if(!resetArm){resetArm=true;b.textContent="Точно сбросить?";b.classList.add("warn");setTimeout(()=>{resetArm=false;b.textContent="Сбросить месяц";b.classList.remove("warn")},3000);return}
   resetArm=false;b.textContent="Сбросить месяц";b.classList.remove("warn");delete tb.months[mkey()];saveT();renderT()};
 $("sum").addEventListener("input",()=>calcT());
+$("srcDay").onclick=()=>{mon().src="day";saveT();calcT()};
+$("srcMonth").onclick=()=>{const m=mon();m.src="month";if(m.sum===undefined||m.sum==="")m.sum=String(Math.round(workDaysNow()*num(st.sum)));saveT();calcT();$("mSum").focus()};
+$("mSum").addEventListener("input",e=>{mon().sum=e.target.value;saveT();calcT()});
+function workDaysNow(){let k=0;for(let d=1;d<=dim();d++)if(!isOff(d))k++;return k}
 $("norm").addEventListener("input",()=>renderT());
 function showTab(month){
   $("viewDay").hidden=month;$("viewMonth").hidden=!month;
@@ -329,6 +384,8 @@ function showTab(month){
   try{localStorage.setItem("brigada-tab",month?"m":"d")}catch(e){}
 }
 $("tabDay").onclick=()=>showTab(false);$("tabMonth").onclick=()=>showTab(true);
+$("infoBtn").onclick=()=>{const p=$("infoPanel");p.hidden=!p.hidden;$("infoBtn").setAttribute("aria-expanded",!p.hidden)};
+$("infoClose").onclick=()=>{$("infoPanel").hidden=true;$("infoBtn").setAttribute("aria-expanded","false")};
 renderT();
 let startTab="d";try{startTab=localStorage.getItem("brigada-tab")||"d"}catch(e){}
 showTab(location.hash==="#tabel"||startTab==="m");
