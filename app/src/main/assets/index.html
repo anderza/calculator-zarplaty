@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>body{margin:0}[hidden]{display:none!important}</style>
+<title>Оплата бригады</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Golos+Text:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one column; inputs band on top, editable roster table, then two method cards side by side */
+:root{
+  --bg:#F3F4F1; --surface:#FFFFFF; --ink:#1D2420; --muted:#5E6862; --line:#D8DCD6;
+  --accent:#C2560E; --accent-soft:#FBE9DC; --a:#2F6B4F; --b:#3D5A8A; --field:#FFFDF6;
+  --display:"Unbounded","Golos Text",system-ui,sans-serif;
+  --body:"Golos Text",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#151A17; --surface:#1E2521; --ink:#E7ECE8; --muted:#9AA59F; --line:#33403A;
+  --accent:#F08A45; --accent-soft:#3A2618; --a:#6FC79B; --b:#8FB0E8; --field:#1A201C; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#151A17; --surface:#1E2521; --ink:#E7ECE8; --muted:#9AA59F; --line:#33403A;
+  --accent:#F08A45; --accent-soft:#3A2618; --a:#6FC79B; --b:#8FB0E8; --field:#1A201C; color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5}
+.wrap{max-width:860px;margin:0 auto;padding-block:28px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:24px}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(22px,4vw,30px);margin:0;text-wrap:balance;letter-spacing:-.01em}
+h2{font-family:var(--display);font-weight:500;font-size:16px;margin:0}
+.lead{color:var(--muted);margin:6px 0 0;max-width:62ch}
+.inputs{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.field{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:grid;gap:4px}
+.field label{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.field input{font-family:var(--mono);font-size:22px;font-weight:600;border:0;background:transparent;color:var(--ink);width:100%;padding:0}
+.field .stat{font-family:var(--mono);font-size:22px;font-weight:600}
+.field.calc{background:transparent;border-style:dashed}
+input:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+.roster{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.roster-head{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--line)}
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;min-width:760px}
+th,td{padding:8px 12px;text-align:right;border-bottom:1px solid var(--line)}
+th{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:500}
+th:first-child,td:first-child{text-align:left}
+td input{font:inherit;border:1px solid var(--line);background:var(--field);color:var(--ink);border-radius:6px;padding:6px 8px;width:100%}
+td.h input{font-family:var(--mono);text-align:right;width:76px}
+td.money{font-family:var(--mono)}
+td.money.a{color:var(--a)} td.money.b{color:var(--b)}
+tr.short td:first-child input{border-color:var(--accent)}
+tfoot td{font-weight:600;border-bottom:0}
+.x{border:0;background:transparent;color:var(--muted);font-size:18px;cursor:pointer;padding:2px 6px;line-height:1}
+.x:hover{color:var(--accent)}
+td.dbl{white-space:nowrap;font-family:var(--mono)}
+.x2{font:inherit;font-weight:600;font-size:13px;border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:6px;padding:3px 8px;cursor:pointer;margin-right:8px}
+.x2[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
+.btn{font:inherit;font-weight:600;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);border-radius:8px;padding:7px 12px;cursor:pointer}
+.btn.ghost{border-color:var(--line);background:transparent;color:var(--muted)}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+.methods{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.m{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;display:grid;gap:8px;align-content:start}
+.m .tag{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.06em}
+.m.a .tag{color:var(--a)} .m.b .tag{color:var(--b)}
+.m p{margin:0;color:var(--muted)}
+.rate{font-family:var(--mono);font-size:26px;font-weight:600}
+.m dl{display:grid;grid-template-columns:1fr auto;gap:2px 12px;margin:0;font-variant-numeric:tabular-nums}
+.m dt{color:var(--muted)} .m dd{margin:0;font-family:var(--mono);text-align:right}
+.note{font-size:13px;color:var(--muted)}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Оплата бригады по часам</h1>
+    <p class="lead">Меняйте сумму за день, норму часов и часы каждого работника. Расчёт идёт сразу двумя способами. Кто отработал меньше нормы, подсвечен. Столбец «За 8 ч» показывает, сколько человек получил бы за полный день. Кнопка «×2» удваивает заработанное работником за день по обоим вариантам.</p>
+  </header>
+
+  <section class="inputs" aria-label="Исходные данные">
+    <div class="field"><label for="sum">Сумма за день на бригаду, ₽</label><input id="sum" type="number" min="0" step="any" inputmode="decimal" value="1000"></div>
+    <div class="field"><label for="norm">Норма часов в день</label><input id="norm" type="number" min="0" step="any" inputmode="decimal" value="8"></div>
+    <div class="field calc"><label>Человек</label><span class="stat" id="people">0</span></div>
+    <div class="field calc"><label>Отработано всего, ч</label><span class="stat" id="hours">0</span></div>
+  </section>
+
+  <section class="roster" aria-label="Работники">
+    <div class="roster-head">
+      <h2>Бригада</h2>
+      <div class="btns">
+        <button class="btn" id="add" type="button">+ Добавить работника</button>
+        <button class="btn ghost" id="reset" type="button">Вернуть пример</button>
+      </div>
+    </div>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>Имя</th><th>Отработано, ч</th><th id="fullH">За 8 ч, ₽</th><th>Вариант А, ₽</th><th>Вариант Б, ₽</th><th>×2, ₽ (А / Б)</th><th aria-label="Удалить"></th></tr></thead>
+        <tbody id="rows"></tbody>
+        <tfoot><tr><td>Итого</td><td id="tH"></td><td class="money" id="tF"></td><td class="money a" id="tA"></td><td class="money b" id="tB"></td><td class="money" id="tX"></td><td></td></tr></tfoot>
+      </table>
+    </div>
+  </section>
+
+  <section class="methods">
+    <article class="m a">
+      <span class="tag">ВАРИАНТ А</span>
+      <h2>Вся сумма делится по часам</h2>
+      <p>Сумма за день делится на все отработанные часы. Деньги раздаются целиком.</p>
+      <div class="rate" id="rateA"></div>
+      <dl><dt>Выплачено</dt><dd id="paidA"></dd><dt>Остаток</dt><dd id="leftA"></dd></dl>
+    </article>
+    <article class="m b">
+      <span class="tag">ВАРИАНТ Б</span>
+      <h2>Фиксированная ставка за час</h2>
+      <p>Сумма делится на людей × норму часов. Недоработанные часы не оплачиваются.</p>
+      <div class="rate" id="rateB"></div>
+      <dl><dt>Выплачено</dt><dd id="paidB"></dd><dt>Остаток</dt><dd id="leftB"></dd></dl>
+    </article>
+  </section>
+  <p class="note">Суммы показаны с копейками. Изменения сохраняются в этом браузере.</p>
+</div>
+
+<script>
+const KEY="brigada-calc-v1";
+const sample=()=>({sum:1000,norm:8,rows:Array.from({length:10},(_,i)=>({name:"Работник "+(i+1),h:i>=8?7:8}))});
+let st;
+try{st=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+if(!st||!Array.isArray(st.rows))st=sample();
+const $=id=>document.getElementById(id);
+const fmt=n=>isFinite(n)?n.toLocaleString("ru-RU",{minimumFractionDigits:2,maximumFractionDigits:2}):"—";
+const num=v=>{const n=parseFloat(String(v).replace(",","."));return isFinite(n)?n:0};
+function save(){try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}}
+function build(){
+  $("sum").value=st.sum;$("norm").value=st.norm;
+  const tb=$("rows");tb.innerHTML="";
+  st.rows.forEach((r,i)=>{
+    const tr=document.createElement("tr");
+    tr.innerHTML=`<td><input id="n${i}" aria-label="Имя"></td><td class="h"><input id="h${i}" type="number" min="0" step="any" inputmode="decimal" aria-label="Часов"></td><td class="money"></td><td class="money a"></td><td class="money b"></td><td class="dbl"><button class="x2" type="button" aria-pressed="false">×2</button><span class="dv"></span></td><td><button class="x" type="button" aria-label="Удалить">×</button></td>`;
+    const n=tr.querySelector("#n"+i),h=tr.querySelector("#h"+i);
+    n.value=r.name;h.value=r.h;
+    n.oninput=()=>{r.name=n.value;save()};
+    h.oninput=()=>{r.h=h.value;calc();save()};
+    const xb=tr.querySelector(".x2");xb.onclick=()=>{r.x2=!r.x2;calc();save()};
+    tr.querySelector(".x").onclick=()=>{st.rows.splice(i,1);build();save()};
+    tb.appendChild(tr);
+  });
+  calc();
+}
+function calc(){
+  const sum=num(st.sum),norm=num(st.norm),people=st.rows.length;
+  const total=st.rows.reduce((s,r)=>s+num(r.h),0);
+  const rA=total>0?sum/total:0, rB=people*norm>0?sum/(people*norm):0;
+  const full=people>0?sum/people:0;
+  $("fullH").textContent="За "+norm.toLocaleString("ru-RU")+" ч, ₽";
+  $("tF").textContent=fmt(full*people);
+  let pA=0,pB=0,xA=0,xB=0,xn=0;
+  [...$("rows").children].forEach((tr,i)=>{
+    const h=num(st.rows[i].h),a=h*rA,b=h*rB;pA+=a;pB+=b;
+    tr.children[2].textContent=fmt(full);tr.children[3].textContent=fmt(a);tr.children[4].textContent=fmt(b);
+    const on=!!st.rows[i].x2;tr.querySelector(".x2").setAttribute("aria-pressed",on);tr.querySelector(".dv").textContent=on?fmt(a*2)+" / "+fmt(b*2):"";if(on){xA+=a*2;xB+=b*2;xn++}
+    tr.classList.toggle("short",h<norm);
+  });
+  $("people").textContent=people;$("hours").textContent=total.toLocaleString("ru-RU");
+  $("tH").textContent=total.toLocaleString("ru-RU");$("tA").textContent=fmt(pA);$("tB").textContent=fmt(pB);$("tX").textContent=xn?fmt(xA)+" / "+fmt(xB):"";
+  $("rateA").textContent=fmt(rA)+" ₽/ч";$("rateB").textContent=fmt(rB)+" ₽/ч";
+  $("paidA").textContent=fmt(pA)+" ₽";$("leftA").textContent=fmt(sum-pA)+" ₽";
+  $("paidB").textContent=fmt(pB)+" ₽";$("leftB").textContent=fmt(sum-pB)+" ₽";
+}
+$("sum").oninput=e=>{st.sum=e.target.value;calc();save()};
+$("norm").oninput=e=>{st.norm=e.target.value;calc();save()};
+$("add").onclick=()=>{st.rows.push({name:"Работник "+(st.rows.length+1),h:st.norm});build();save();const l=$("n"+(st.rows.length-1));l&&l.focus()};
+$("reset").onclick=()=>{st=sample();build();save()};
+build();
+</script>
+
+</body>
+</html>

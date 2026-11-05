@@ -1,0 +1,27 @@
+plugins { id "com.android.application" }
+
+android {
+    namespace "com.anderza.zarplata"
+    compileSdk 34
+    defaultConfig {
+        applicationId "com.anderza.zarplata"
+        minSdk 21
+        targetSdk 34
+        versionCode (System.getenv("GITHUB_RUN_NUMBER") ? System.getenv("GITHUB_RUN_NUMBER").toInteger() : 1)
+        versionName "1.0." + (System.getenv("GITHUB_RUN_NUMBER") ?: "0")
+    }
+    signingConfigs {
+        release {
+            storeFile file("zarplata.keystore")
+            storePassword "zarplata123"
+            keyAlias "zarplata"
+            keyPassword "zarplata123"
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.release
+        }
+    }
+}
